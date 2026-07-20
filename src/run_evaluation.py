@@ -20,6 +20,8 @@ import pandas as pd
 from harness import WalkForwardEvaluator
 from ewma import EWMA
 from garch import GARCH11
+from egarch import EGARCH11
+from gjr import GJRGARCH11
 
 BASE = os.path.join(os.path.dirname(__file__), "..")
 DATA = os.path.join(BASE, "data", "processed", "modelling_data.csv")
@@ -29,6 +31,8 @@ RES = os.path.join(BASE, "results")
 MODELS = [
     ("ewma", lambda seed: EWMA(), (0,)),
     ("garch", lambda seed: GARCH11(), (0,)),
+    ("egarch", lambda seed: EGARCH11(), (0,)),
+    ("gjr", lambda seed: GJRGARCH11(), (0,)),
 ]
 
 
@@ -40,7 +44,10 @@ def _summarise_params(name, model):
 
     last = ph.iloc[-1]
     rows = []
-    for col in ["omega", "alpha", "beta", "persistence"]:
+    # include the asymmetry term gamma when the model has one (EGARCH, GJR)
+    param_cols = [c for c in ["omega", "alpha", "gamma", "beta", "persistence"]
+                  if c in ph.columns]
+    for col in param_cols:
         rows.append(dict(parameter=col, last_fit=last[col], mean=ph[col].mean(),
                          std=ph[col].std(), min=ph[col].min(), max=ph[col].max()))
     summary = pd.DataFrame(rows)
