@@ -18,6 +18,7 @@ computed on volatility (sqrt of both) for interpretability.
 Leakage is prevented BY CONSTRUCTION, not by convention. See walk_forward_forecast().
 """
 import os
+import time
 import warnings
 
 import numpy as np
@@ -228,16 +229,22 @@ class WalkForwardEvaluator:
         self.results_dir = results_dir
         self._per_seed = {}     # name -> list of per-seed forecast frames
         self._forecast = {}     # name -> seed-averaged forecast frame (variance space)
+        self.models = {}        # name -> last fitted model instance (for parameter inspection)
+        self.timings = {}       # name -> wall-clock seconds for the walk-forward run
 
     def run(self, model_factory, name=None, seeds=(0,)):
         """Run one model across `seeds`; store per-seed and seed-averaged forecasts."""
         frames = []
         resolved_name = name
+        model = None
+        t0 = time.perf_counter()
         for seed in seeds:
             model = model_factory(seed)
             resolved_name = name or model.name
             frames.append(walk_forward_forecast(
                 model, self.data, self.first_forecast_date, self.refit_every, self.proxy_col))
+        self.timings[resolved_name] = time.perf_counter() - t0
+        self.models[resolved_name] = model    # last seed's instance (holds fitted state)
 
         agg = frames[0].copy()
         if len(frames) > 1:
