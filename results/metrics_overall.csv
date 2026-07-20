@@ -1,0 +1,2 @@
+model,regime,n,n_seeds,qlike,qlike_std,rmse,rmse_std
+ewma,overall,4005,1,0.35428837467336743,0.0,0.005185219155385471,0.0

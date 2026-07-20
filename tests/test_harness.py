@@ -126,6 +126,24 @@ def test_walk_forward_runs_and_aligns(sample_data, persistence_factory):
     assert np.allclose(fc["forecast"].to_numpy(), prev.to_numpy())
 
 
+def test_bad_forecast_is_rejected_with_model_and_date(sample_data):
+    """A model emitting a non-positive/non-finite variance must fail immediately, and
+    the error must name the offending model so the bug is easy to locate."""
+    class BadModel(VolatilityModel):
+        def __init__(self, value):
+            super().__init__(name="bad_model")
+            self.value = value
+        def fit(self, train):
+            pass
+        def forecast(self, history):
+            return self.value
+
+    for bad in (0.0, -1.0, np.nan, np.inf):
+        with pytest.raises(ValueError, match="bad_model"):
+            walk_forward_forecast(BadModel(bad), sample_data,
+                                  first_forecast_date="2004-01-01")
+
+
 def test_refit_every_gt_1_warns(sample_data, persistence_factory):
     with pytest.warns(UserWarning, match="DEVIATES from the strict walk-forward"):
         walk_forward_forecast(persistence_factory(), sample_data,

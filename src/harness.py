@@ -59,6 +59,10 @@ def walk_forward_forecast(model, data, first_forecast_date=FIRST_FORECAST_DATE,
     """Expanding-origin walk-forward. Returns a frame indexed by forecast date with
     columns [forecast, actual, regime].
 
+    `history` is the FULL expanding window from the start of the sample (data.iloc[:t+1]),
+    never a truncated/rolling slice; models that seed a recursion may rely on this. The
+    model's forecast is validated to be a strictly positive, finite variance each step.
+
     Leakage is blocked at six structural points (see inline comments):
       1. At origin t the model is handed data.iloc[:t+1] and nothing else.
       2. The actual value at t+1 is held here and read only AFTER forecast() returns.
@@ -105,6 +109,14 @@ def walk_forward_forecast(model, data, first_forecast_date=FIRST_FORECAST_DATE,
             model.fit(history)                      # (4) any scaling fit here, on train only
 
         forecast = float(model.forecast(history))   # variance forecast for target_i
+        # Contract guard: models must emit a strictly positive, finite VARIANCE. Checked
+        # here so a bad forecast fails immediately, naming the model and date, rather than
+        # surfacing later as an opaque error inside the QLIKE computation.
+        if not np.isfinite(forecast) or forecast <= 0.0:
+            raise ValueError(
+                f"{getattr(model, 'name', type(model).__name__)}: forecast for "
+                f"{pd.Timestamp(target_date).date()} is {forecast!r}; models must return "
+                f"a strictly positive, finite variance.")
         # (2) the answer is read ONLY now, purely for scoring; never passed to the model.
         actual = float(data[proxy_col].iloc[target_i])
         records.append((target_date, forecast, actual))

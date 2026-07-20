@@ -75,6 +75,10 @@ class VolatilityModel(ABC):
 
         Predicts the day immediately AFTER `history`'s last row, using the parameters
         from the most recent fit() and the observations in `history` (all index <=
-        origin). Must return a strictly positive float and must not use any row beyond
-        `history`.
+        origin). `history` is the full expanding window from the start of the sample.
+
+        Must return a strictly positive, finite VARIANCE (not a volatility, not a log).
+        The harness validates this every step and raises if violated, so there is no
+        need to score an ill-defined forecast; still, prefer flooring degenerate cases
+        in the model to returning a value that would trip the guard.
         """
