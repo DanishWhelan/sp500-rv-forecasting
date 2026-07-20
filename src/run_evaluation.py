@@ -22,6 +22,7 @@ from ewma import EWMA
 from garch import GARCH11
 from egarch import EGARCH11
 from gjr import GJRGARCH11
+from har import HARRV
 
 BASE = os.path.join(os.path.dirname(__file__), "..")
 DATA = os.path.join(BASE, "data", "processed", "modelling_data.csv")
@@ -33,6 +34,7 @@ MODELS = [
     ("garch", lambda seed: GARCH11(), (0,)),
     ("egarch", lambda seed: EGARCH11(), (0,)),
     ("gjr", lambda seed: GJRGARCH11(), (0,)),
+    ("har", lambda seed: HARRV(), (0,)),
 ]
 
 
