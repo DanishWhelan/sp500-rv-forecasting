@@ -1,0 +1,25 @@
+# Core data
+pandas==2.2.2
+numpy==1.26.4
+# yfinance is the one-time download pipe only (fills data/raw, then frozen); it is
+# NOT part of the numerical reproducibility contract. 0.2.40 no longer authenticates
+# against Yahoo's current API, so it is unpinned to a working floor. See README provenance.
+yfinance>=1.5
+
+# Classical volatility models
+arch==7.0.0
+statsmodels==0.14.2
+
+# Utilities
+scipy==1.13.1
+scikit-learn==1.5.1
+matplotlib==3.9.0
+
+# Notebook
+jupyter==1.0.0
+
+# Testing (evaluation-harness self-tests, incl. leakage tests)
+pytest==8.2.2
+
+# Deep learning (installed in Week 3 — uncomment then)
+# torch==2.3.1
