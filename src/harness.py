@@ -232,8 +232,14 @@ class WalkForwardEvaluator:
         self.models = {}        # name -> last fitted model instance (for parameter inspection)
         self.timings = {}       # name -> wall-clock seconds for the walk-forward run
 
-    def run(self, model_factory, name=None, seeds=(0,)):
-        """Run one model across `seeds`; store per-seed and seed-averaged forecasts."""
+    def run(self, model_factory, name=None, seeds=(0,), refit_every=None):
+        """Run one model across `seeds`; store per-seed and seed-averaged forecasts.
+
+        `refit_every` overrides the evaluator default for this model only, so an expensive
+        stochastic model (the LSTM) can re-estimate less often (e.g. quarterly) while the
+        classical models stay strict (=1) in the same evaluation.
+        """
+        refit = self.refit_every if refit_every is None else refit_every
         frames = []
         resolved_name = name
         model = None
@@ -242,7 +248,7 @@ class WalkForwardEvaluator:
             model = model_factory(seed)
             resolved_name = name or model.name
             frames.append(walk_forward_forecast(
-                model, self.data, self.first_forecast_date, self.refit_every, self.proxy_col))
+                model, self.data, self.first_forecast_date, refit, self.proxy_col))
         self.timings[resolved_name] = time.perf_counter() - t0
         self.models[resolved_name] = model    # last seed's instance (holds fitted state)
 
