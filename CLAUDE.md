@@ -86,5 +86,31 @@ invalidates everything. When GARCH is fitted, report the parameters and compare 
 
 ## Current status
 
-Week 1 scaffold complete: download_data.py, build_target.py, eda.py all written and tested.
-Next: Week 2 — the evaluation harness, then the classical models (EWMA, GARCH, EGARCH, GJR, HAR-RV).
+Evaluation is leakage-free by construction (walk-forward, scaling on train only, one-step
+GARCH forecasts) with a full test suite; every model's leak boundary was verified before its
+results were trusted. Test period 2004-01-02 to 2022-02-25 (n=4005). Backed up to a private
+GitHub repo.
+
+Done:
+- Harness complete: QLIKE (primary) + RMSE, Diebold-Mariano (HLN corrected), regime split
+  (calm / gfc_2008 / covid_2020), multi-seed evaluator, results saved to results/ as CSV.
+- Classical ladder complete and validated:
+  - EWMA (RiskMetrics) naive baseline.
+  - GARCH(1,1): persistence ~0.985, textbook vs literature (supervisor validation PASS).
+  - EGARCH, GJR: asymmetry significant across all regimes; leverage confirmed (EGARCH gamma
+    ~ -0.14, GJR gamma ~ +0.16), magnitudes in the published S&P 500 range.
+  - HAR-RV: best classical model, overall QLIKE 0.216. Beats EGARCH overall and in calm,
+    ties it in crises.
+- LSTM done (log-RV + VIX, monthly refit, 5 seeds): overall QLIKE 0.214, statistically
+  TIED with HAR (DM p=0.25) and worse than HAR in the 2008 GFC. A null result for the deep
+  model's architectural advantage, at ~2400x HAR's compute.
+- VIX ablation done (architecture vs information): removing VIX significantly degrades the
+  LSTM in every regime; on RV-only information HAR significantly beats the LSTM (DM -6.7,
+  p<1e-4). Conclusion: the LSTM's HAR-parity comes entirely from the exogenous VIX
+  information, not the architecture.
+
+Remaining build: the GARCH-LSTM hybrid (GARCH one-step variance forecast as an LSTM feature)
+plus its GARCH-feature ablation. Same protocol (monthly refit, 5 seeds); reuse the leak-free
+one-step GARCH forecast path; verify the leak boundary before trusting results. This completes
+the ladder and the second half of the architecture-vs-information decomposition (does an
+econometric structural input add value where raw architecture did not?).
