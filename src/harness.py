@@ -232,14 +232,21 @@ class WalkForwardEvaluator:
         self.models = {}        # name -> last fitted model instance (for parameter inspection)
         self.timings = {}       # name -> wall-clock seconds for the walk-forward run
 
-    def run(self, model_factory, name=None, seeds=(0,), refit_every=None):
+    def run(self, model_factory, name=None, seeds=(0,), refit_every=None, data=None):
         """Run one model across `seeds`; store per-seed and seed-averaged forecasts.
 
         `refit_every` overrides the evaluator default for this model only, so an expensive
         stochastic model (the LSTM) can re-estimate less often (e.g. quarterly) while the
         classical models stay strict (=1) in the same evaluation.
+
+        `data` overrides the evaluator's frame for this model only. Needed by the
+        GARCH-LSTM hybrid, whose derived GARCH feature is undefined over the burn-in rows
+        at the start of the sample. The forecast frames are aligned on DATE, and metrics
+        and DM tests intersect indices, so a model on a shorter frame stays comparable as
+        long as the scored period matches (it does: burn-in ends before the test period).
         """
         refit = self.refit_every if refit_every is None else refit_every
+        frame_data = self.data if data is None else data.sort_index()
         frames = []
         resolved_name = name
         model = None
@@ -248,7 +255,7 @@ class WalkForwardEvaluator:
             model = model_factory(seed)
             resolved_name = name or model.name
             frames.append(walk_forward_forecast(
-                model, self.data, self.first_forecast_date, refit, self.proxy_col))
+                model, frame_data, self.first_forecast_date, refit, self.proxy_col))
         self.timings[resolved_name] = time.perf_counter() - t0
         self.models[resolved_name] = model    # last seed's instance (holds fitted state)
 

@@ -12,6 +12,8 @@ Design (fixed a priori; see the design note in the project history):
   - target: log(realised_variance), standardised on the training window only
   - inputs: per-timestep features (default log realised variance + VIX); ablation drops a
     feature by CONSTRUCTING the model with a shorter `features` tuple (no code change)
+  - `log_features` names the columns that enter in logs (default: just the target). The
+    GARCH-LSTM hybrid adds its variance-scale GARCH feature to this set; see src/hybrid.py
   - lookback L = 22 trading days (matches HAR's monthly horizon, for a fair comparison)
   - 1-layer LSTM, hidden 32, Linear head, MSE loss on standardised log-RV, Adam
   - early stopping on the chronological TAIL of the training window (still < origin)
@@ -64,9 +66,13 @@ class LSTMModel(VolatilityModel):
     def __init__(self, seed=0, features=("realised_variance", "vix"),
                  target="realised_variance", lookback=LOOKBACK, hidden=HIDDEN,
                  max_epochs=MAX_EPOCHS, patience=PATIENCE, lr=LR, batch=BATCH,
-                 val_frac=VAL_FRAC, name="lstm"):
+                 val_frac=VAL_FRAC, name="lstm", log_features=None):
         super().__init__(name=name, features=features, target=target)
         self.seed = seed
+        # Columns entering in logs. Default is the target alone, which reproduces the
+        # original behaviour exactly (so committed LSTM results are unchanged); the hybrid
+        # passes its variance-scale GARCH feature in as well.
+        self.log_features = frozenset({target} if log_features is None else log_features)
         self.lookback = lookback
         self.hidden = hidden
         self.max_epochs = max_epochs
@@ -82,8 +88,8 @@ class LSTMModel(VolatilityModel):
         cols = []
         for c in self.features:
             v = frame[c].to_numpy(dtype=float)
-            if c == self.target:
-                v = np.log(v)          # realised variance enters in logs
+            if c in self.log_features:
+                v = np.log(v)          # variance-scale columns enter in logs
             cols.append(v)
         return np.column_stack(cols)   # [N, F]
 

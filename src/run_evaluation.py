@@ -24,21 +24,32 @@ from egarch import EGARCH11
 from gjr import GJRGARCH11
 from har import HARRV
 from lstm import LSTMModel
+from hybrid import hybrid_frame, make_hybrid
 
 BASE = os.path.join(os.path.dirname(__file__), "..")
 DATA = os.path.join(BASE, "data", "processed", "modelling_data.csv")
 RES = os.path.join(BASE, "results")
 
-# (name, factory(seed) -> model, seeds, refit_every). Deterministic classical models use a
-# single seed and strict re-fit (1). The LSTM is stochastic (5 seeds) and re-fits monthly
-# (21) for tractability -- the documented compromise; the harness warns when refit_every > 1.
+# (name, factory(seed) -> model, seeds, refit_every, data_fn). Deterministic classical
+# models use a single seed and strict re-fit (1). The LSTM and both hybrid arms are
+# stochastic (5 seeds) and re-fit monthly (21) for tractability -- the documented
+# compromise; the harness warns when refit_every > 1.
+#
+# data_fn is None for models running on the base frame. The two hybrid arms share a frame
+# carrying the derived one-step GARCH feature, with its burn-in rows dropped; running BOTH
+# arms on that same frame is what keeps the GARCH ablation free of a sample-size confound
+# (see src/hybrid.py).
 MODELS = [
-    ("ewma", lambda seed: EWMA(), (0,), 1),
-    ("garch", lambda seed: GARCH11(), (0,), 1),
-    ("egarch", lambda seed: EGARCH11(), (0,), 1),
-    ("gjr", lambda seed: GJRGARCH11(), (0,), 1),
-    ("har", lambda seed: HARRV(), (0,), 1),
-    ("lstm", lambda seed: LSTMModel(seed=seed), (0, 1, 2, 3, 4), 21),
+    ("ewma", lambda seed: EWMA(), (0,), 1, None),
+    ("garch", lambda seed: GARCH11(), (0,), 1, None),
+    ("egarch", lambda seed: EGARCH11(), (0,), 1, None),
+    ("gjr", lambda seed: GJRGARCH11(), (0,), 1, None),
+    ("har", lambda seed: HARRV(), (0,), 1, None),
+    ("lstm", lambda seed: LSTMModel(seed=seed), (0, 1, 2, 3, 4), 21, None),
+    ("hybrid", lambda seed: make_hybrid(seed=seed, with_garch=True),
+     (0, 1, 2, 3, 4), 21, hybrid_frame),
+    ("hybrid_nogarch", lambda seed: make_hybrid(seed=seed, with_garch=False),
+     (0, 1, 2, 3, 4), 21, hybrid_frame),
 ]
 
 
@@ -73,9 +84,11 @@ def main():
     print(f"Loaded {len(data)} rows, {data.index.min().date()} to {data.index.max().date()}")
 
     evaluator = WalkForwardEvaluator(data)   # first forecast 2004-01-01, refit_every=1 (strict)
-    for name, factory, seeds, refit_every in MODELS:
+    for name, factory, seeds, refit_every, data_fn in MODELS:
         print(f"Running {name} (seeds={seeds}, refit_every={refit_every}) ...", flush=True)
-        evaluator.run(factory, name=name, seeds=seeds, refit_every=refit_every)
+        model_data = None if data_fn is None else data_fn(data)
+        evaluator.run(factory, name=name, seeds=seeds, refit_every=refit_every,
+                      data=model_data)
         print(f"  walk-forward wall-clock: {evaluator.timings[name]:.1f}s", flush=True)
 
     metrics = evaluator.save()
@@ -91,7 +104,7 @@ def main():
         print(dm.to_string(index=False, formatters={
             "dm_stat": "{:.3f}".format, "p_value": "{:.4f}".format}))
 
-    for name, *_ in MODELS:
+    for name, *_rest in MODELS:
         model = evaluator.models.get(name)
         if model is not None and getattr(model, "param_history", None):
             _summarise_params(name, model)

@@ -108,9 +108,28 @@ Done:
   LSTM in every regime; on RV-only information HAR significantly beats the LSTM (DM -6.7,
   p<1e-4). Conclusion: the LSTM's HAR-parity comes entirely from the exogenous VIX
   information, not the architecture.
+- GARCH-LSTM hybrid done (rung 6, the final rung). The hybrid is the LSTM with a third
+  feature: the GARCH(1,1) ONE-STEP-AHEAD variance forecast, built through the same
+  walk_forward path used to score GARCH standalone (never the in-sample fit). Leak boundary
+  verified before trusting results: tests/test_hybrid.py asserts the feature column is
+  prefix-determined (building it on a prefix reproduces full-sample values exactly, which is
+  what licenses caching it), that it differs materially from the forbidden full-sample
+  fitted conditional variance, and end-to-end future-corruption invariance. Feature built
+  with strict refit (=1), cached to data/processed/garch_feature.csv; needs ~250 days
+  burn-in, so both arms run on the same burn-in-trimmed frame (n=4005 scored, burn-in ends
+  2001, before the 2004 test start) to keep the ablation free of a sample-size confound.
+- GARCH-feature ablation done (structure effect, hybrid vs matched hybrid_nogarch, monthly
+  refit, 5 seeds): NULL overall (DM +0.80, p=0.42; QLIKE 0.2148 vs 0.2141) but a regime
+  split -- the GARCH structural input significantly HELPS in the 2008 GFC (DM -3.40,
+  p=0.0009; QLIKE 0.266 vs 0.292, i.e. it buys back the pure LSTM's crisis weakness) and
+  marginally HURTS in calm (DM +2.10, p=0.036). Hybrid still only ties HAR overall (DM 0.37,
+  p=0.71). Results in results/ablation_decomposition.csv (STRUCTURE columns).
 
-Remaining build: the GARCH-LSTM hybrid (GARCH one-step variance forecast as an LSTM feature)
-plus its GARCH-feature ablation. Same protocol (monthly refit, 5 seeds); reuse the leak-free
-one-step GARCH forecast path; verify the leak boundary before trusting results. This completes
-the ladder and the second half of the architecture-vs-information decomposition (does an
-econometric structural input add value where raw architecture did not?).
+LADDER COMPLETE. Full architecture-vs-information-vs-structure decomposition:
+  - architecture alone (lstm_novix vs HAR): HAR wins, p~2e-11 -- the LSTM does not beat a
+    well-specified classical benchmark on equal information;
+  - information (VIX): the whole source of the LSTM's HAR-parity, p~5e-12;
+  - structure (GARCH): redistributes skill across regimes (helps crises, costs calm) without
+    changing the overall standing.
+A defensible, honest null overall with a genuinely interesting regime-conditional finding;
+no manufactured deep-learning win. Remaining work is write-up, not modelling.
