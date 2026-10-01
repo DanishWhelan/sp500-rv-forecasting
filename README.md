@@ -15,7 +15,7 @@ tests. This project tests the claim under a deliberately strict protocol.
 
 Seven model configurations (EWMA, GARCH(1,1), EGARCH, GJR-GARCH, HAR-RV, an LSTM and a
 GARCH-LSTM hybrid) are evaluated on **4,005 one-day-ahead forecasts of S&P 500 realised
-volatility (Jan 2004 - Feb 2022)** using:
+volatility (Jan 2004 to Feb 2022)** using:
 
 - an **expanding-origin walk-forward** harness, built before any model, that prevents
   look-ahead bias by construction and is verified by adversarial leakage tests;
