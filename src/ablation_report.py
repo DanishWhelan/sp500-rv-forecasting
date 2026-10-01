@@ -18,7 +18,7 @@ still works on the classical + LSTM results alone.
 
 Both hybrid arms are trained on the same burn-in-trimmed frame, so their contrast isolates
 the GARCH feature rather than training-sample size. That is also why `lstm` is NOT used as
-the ablation arm for the structure effect: it trains on ~250 extra early rows. See
+the ablation arm for the structure effect: it trains on 250 extra early rows. See
 src/hybrid.py.
 
 QLIKE values here are for the seed-averaged forecast of each model (so all models are
