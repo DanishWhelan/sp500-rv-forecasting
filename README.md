@@ -1,8 +1,8 @@
-# Beyond GARCH? — Volatility Forecasting Comparison
+# Beyond GARCH? Volatility Forecasting Comparison
 
 **A rigorous comparison of classical and deep learning models for forecasting S&P 500 realised volatility.**
 
-MSc Data Science dissertation, University of Surrey (2025–26). Author: Danish Whelan Bin Zamri.
+MSc Data Science dissertation, University of Surrey (2025-26). Author: Danish Whelan Bin Zamri.
 Supervisor: Dr Tom Thorne. The full dissertation is in
 [`docs/Beyond_GARCH_Dissertation.pdf`](docs/Beyond_GARCH_Dissertation.pdf).
 
@@ -13,9 +13,9 @@ models long standard in volatility forecasting. Many of those comparisons evalua
 noisy proxies, use unverified baselines, rely on a single fixed split and omit significance
 tests. This project tests the claim under a deliberately strict protocol.
 
-Seven model configurations — EWMA, GARCH(1,1), EGARCH, GJR-GARCH, HAR-RV, an LSTM and a
-GARCH-LSTM hybrid — are evaluated on **4,005 one-day-ahead forecasts of S&P 500 realised
-volatility (Jan 2004 – Feb 2022)** using:
+Seven model configurations (EWMA, GARCH(1,1), EGARCH, GJR-GARCH, HAR-RV, an LSTM and a
+GARCH-LSTM hybrid) are evaluated on **4,005 one-day-ahead forecasts of S&P 500 realised
+volatility (Jan 2004 - Feb 2022)** using:
 
 - an **expanding-origin walk-forward** harness, built before any model, that prevents
   look-ahead bias by construction and is verified by adversarial leakage tests;
@@ -23,7 +23,7 @@ volatility (Jan 2004 – Feb 2022)** using:
 - the **QLIKE** loss (robust to proxy noise; Patton, 2011), with RMSE alongside;
 - **Diebold-Mariano** tests (Newey-West HAC variance, Harvey-Leybourne-Newbold correction) for
   every pairwise comparison, overall and per regime;
-- disaggregation across **calm, GFC 2008–09 and COVID 2020** regimes;
+- disaggregation across **calm, GFC 2008-09 and COVID 2020** regimes;
 - **five random seeds** for every deep model;
 - GARCH-family baselines **validated against published S&P 500 parameter estimates**.
 
@@ -35,7 +35,7 @@ volatility (Jan 2004 – Feb 2022)** using:
    the deep models.
 2. **The LSTM's parity comes entirely from the VIX feature, not the architecture.** With the
    implied-volatility (VIX) input removed, the LSTM has the same information as HAR-RV. It then
-   falls significantly behind HAR-RV (DM −6.72, p < 0.0001). Removing VIX raises crisis loss by
+   falls significantly behind HAR-RV (DM -6.72, p < 0.0001). Removing VIX raises crisis loss by
    ~45% in 2008 and ~62% in 2020. On equal information, the deep architecture does worse than
    the linear model.
 3. **Adding the GARCH feature to the LSTM changes where it is accurate, not how accurate it is
@@ -81,16 +81,16 @@ Deep models report the mean (± s.d.) across seeds. DM tests use the seed-averag
 
 | Contrast | Overall | Calm | GFC 2008 | COVID 2020 |
 |---|---|---|---|---|
-| **Information:** LSTM vs LSTM without VIX (DM, p) | −6.92, <0.0001 | −5.54, <0.0001 | −3.84, 0.0002 | −2.67, 0.011 |
-| **Architecture:** HAR vs LSTM without VIX (DM, p) | −6.72, <0.0001 | −5.39, <0.0001 | −3.71, 0.0003 | −2.08, 0.043 |
-| **Structure:** hybrid vs hybrid without GARCH (DM, p) | +0.80, 0.42 | +2.09, 0.036 | −3.40, 0.0009 | −0.61, 0.55 |
+| **Information:** LSTM vs LSTM without VIX (DM, p) | -6.92, <0.0001 | -5.54, <0.0001 | -3.84, 0.0002 | -2.67, 0.011 |
+| **Architecture:** HAR vs LSTM without VIX (DM, p) | -6.72, <0.0001 | -5.39, <0.0001 | -3.71, 0.0003 | -2.08, 0.043 |
+| **Structure:** hybrid vs hybrid without GARCH (DM, p) | +0.80, 0.42 | +2.09, 0.036 | -3.40, 0.0009 | -0.61, 0.55 |
 
 A negative DM statistic favours the first-named model. Each ablated arm is trained on exactly
 the same observations as its comparator.
 
 ### Baseline validation
 
-GARCH(1,1) persistence (α + β) averages ~0.985 across all 4,005 fits, inside the 0.98–0.99
+GARCH(1,1) persistence (α + β) averages ~0.985 across all 4,005 fits, inside the 0.98-0.99
 range published for daily equity indices. EGARCH and GJR asymmetry terms have the expected
 leverage sign in every fit. Every fit converged and was stationary. Per-origin parameter paths
 are in `results/*_params.csv`, and the comparisons with published values are in
@@ -101,12 +101,12 @@ are in `results/*_params.csv`, and the comparisons with published values are in
 | | |
 |---|---|
 | ![Full period](results/fig_comparison_full.png) | ![GFC 2008](results/fig_comparison_gfc2008.png) |
-| Leading models vs realised volatility, 2004–2022 | Global financial crisis, 2008–09 |
+| Leading models vs realised volatility, 2004-2022 | Global financial crisis, 2008-09 |
 | ![COVID 2020](results/fig_comparison_covid2020.png) | ![VIX vs RV](results/fig5_vix_vs_rv.png) |
 | COVID-19 crash, 2020 | VIX vs annualised realised volatility |
 
-Exploratory figures (`fig1`–`fig5`) show returns, volatility clustering, the ACF of returns
-vs squared returns, fat tails and the VIX–RV relationship.
+Exploratory figures (`fig1`-`fig5`) show returns, volatility clustering, the ACF of returns
+vs squared returns, fat tails and the VIX-RV relationship.
 
 ### Limitations
 
@@ -114,7 +114,7 @@ vs squared returns, fat tails and the VIX–RV relationship.
   architectures (TCN, transformer) are untested.
 - Deep models are refit monthly; classical models are refit at every origin. This is a
   documented deviation, made for tractability, and if anything it disadvantages the deep models.
-- The study covers a single index (S&P 500), 2004–2022. The Oxford-Man library was
+- The study covers a single index (S&P 500), 2004-2022. The Oxford-Man library was
   discontinued, so the target ends on 2022-02-25.
 - Realised volatility is still a proxy for a latent quantity. QLIKE mitigates this but does
   not remove it.

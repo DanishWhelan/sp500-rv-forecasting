@@ -1,4 +1,4 @@
-# CLAUDE.md — Project Context for Claude Code
+# CLAUDE.md: Project Context for Claude Code
 
 ## What this project is
 
@@ -9,7 +9,7 @@ is a fair, trustworthy comparison, not a new model.
 
 Research question: do deep learning models improve realised-volatility forecast accuracy
 over well-specified GARCH-family baselines, under leakage-free evaluation with proper
-scoring rules and significance testing — and if so, does the gain come from architecture
+scoring rules and significance testing, and if so, does the gain come from architecture
 or from exogenous information (VIX)?
 
 **A null result is a valid, expected outcome.** Do not tune models to manufacture a deep-learning
@@ -17,12 +17,12 @@ win. The integrity of the comparison matters more than its direction.
 
 ## The model ladder (build in this order, simplest first)
 
-1. EWMA (RiskMetrics) — naive baseline
-2. GARCH(1,1) — core classical baseline
-3. EGARCH and GJR-GARCH — asymmetric (REQUIRED: literature shows asymmetry is essential for equity data)
-4. HAR-RV — strong realised-volatility benchmark (regression on daily/weekly/monthly RV averages)
-5. LSTM — deep model
-6. GARCH-LSTM hybrid — GARCH conditional-variance forecast fed as an LSTM input feature
+1. EWMA (RiskMetrics): naive baseline
+2. GARCH(1,1): core classical baseline
+3. EGARCH and GJR-GARCH: asymmetric (REQUIRED: literature shows asymmetry is essential for equity data)
+4. HAR-RV: strong realised-volatility benchmark (regression on daily/weekly/monthly RV averages)
+5. LSTM: deep model
+6. GARCH-LSTM hybrid: GARCH conditional-variance forecast fed as an LSTM input feature
 
 ## NON-NEGOTIABLE RULES (leakage prevention)
 
@@ -57,11 +57,11 @@ This decomposes any gain into architecture vs information. It is a core contribu
 
 ## Data
 
-- `data/raw/spy_daily.csv` — SPY OHLCV (yfinance). Immutable.
-- `data/raw/vix_daily.csv` — VIX (yfinance). Exogenous feature. Immutable.
-- `data/raw/oxfordman_raw.csv` — FULL archived Oxford-Man realised library (all symbols, all
+- `data/raw/spy_daily.csv`: SPY OHLCV (yfinance). Immutable.
+- `data/raw/vix_daily.csv`: VIX (yfinance). Exogenous feature. Immutable.
+- `data/raw/oxfordman_raw.csv`: FULL archived Oxford-Man realised library (all symbols, all
   estimators). Immutable. build_target.py filters to symbol `.SPX` and column `rv5`. Ends 2022-02-25.
-- `data/processed/modelling_data.csv` — built by `src/build_target.py`. What models consume.
+- `data/processed/modelling_data.csv`: built by `src/build_target.py`. What models consume.
 - **NEVER edit anything in data/raw/ by hand.** All cleaning is in code, regenerable from raw.
 
 ## Reproducibility
@@ -80,7 +80,7 @@ invalidates everything. When GARCH is fitted, report the parameters and compare 
 
 - Clear, readable, commented where the finance/stats logic is non-obvious.
 - Prose in comments/docstrings: no em-dashes.
-- Prefer explicit, auditable code over clever one-liners — this is research code that must be
+- Prefer explicit, auditable code over clever one-liners, as this is research code that must be
   trusted and reproduced, not production code optimised for elegance.
 - Scripts in src/, exploration in notebooks/, outputs to results/.
 

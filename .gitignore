@@ -1,4 +1,4 @@
-# Data — too large / not owned by you; regenerable from source
+# Data: too large / not owned by you; regenerable from source
 data/raw/*
 data/processed/*
 !data/raw/.gitkeep

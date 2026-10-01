@@ -41,7 +41,7 @@ plt.tight_layout(); plt.savefig(os.path.join(RES, "fig1_returns.png"), dpi=120);
 # --- Fig 2: squared returns (volatility clustering) ---
 plt.figure(figsize=(10, 3))
 plt.plot(df.index, r**2, lw=0.5, color="firebrick")
-plt.title("Squared daily returns — volatility clustering")
+plt.title("Squared daily returns: volatility clustering")
 plt.tight_layout(); plt.savefig(os.path.join(RES, "fig2_clustering.png"), dpi=120); plt.close()
 
 # --- Fig 3: ACF of returns vs ACF of squared returns (THE key figure) ---
@@ -55,7 +55,7 @@ plt.tight_layout(); plt.savefig(os.path.join(RES, "fig3_acf.png"), dpi=120); plt
 # --- Fig 4: distribution vs normal (fat tails) ---
 plt.figure(figsize=(6, 4))
 stats.probplot(r.dropna(), dist="norm", plot=plt)
-plt.title("Normal Q-Q plot of returns — departure in tails indicates fat tails")
+plt.title("Normal Q-Q plot of returns: departure in tails indicates fat tails")
 plt.tight_layout(); plt.savefig(os.path.join(RES, "fig4_distribution.png"), dpi=120); plt.close()
 
 # --- Fig 5: VIX vs realised volatility ---

@@ -112,16 +112,16 @@ def main():
     # --- 5. sanity checks (fail loudly if alignment is wrong) ---
     assert df.index.is_monotonic_increasing, "dates not sorted"
     assert (df["rv_daily"] > 0).all(), "non-positive realised volatility present"
-    assert df["log_return"].abs().max() < 0.5, "implausible daily return (>50%) — check data"
+    assert df["log_return"].abs().max() < 0.5, "implausible daily return (>50%), check data"
 
     # crisis check: RV should spike in each defined crisis regime, and each window must
     # actually be covered by the sample (guards against a silently truncated RV target).
     for label, (lo, hi) in REGIMES.items():
         window = df.loc[lo:hi, "rv_annualised"]
-        assert len(window), f"regime {label!r} ({lo} to {hi}) has no data — RV sample truncated?"
+        assert len(window), f"regime {label!r} ({lo} to {hi}) has no data. RV sample truncated?"
         ratio = window.max() / df["rv_annualised"].median()
         print(f"  {label} ({lo} to {hi}): {len(window)} days, peak RV = {ratio:.1f}x median "
-              f"({'OK, spikes as expected' if ratio > 1.5 else 'CHECK — no clear spike'})")
+              f"({'OK, spikes as expected' if ratio > 1.5 else 'CHECK: no clear spike'})")
 
     # --- 6. save processed modelling dataframe ---
     out = os.path.join(PROC, "modelling_data.csv")
